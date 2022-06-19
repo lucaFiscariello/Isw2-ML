@@ -1,4 +1,4 @@
-package com.fiscariello.progetto;
+package com.fiscariello.project;
 
 import java.text.ParseException;
 import java.util.Date;

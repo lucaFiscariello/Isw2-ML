@@ -12,8 +12,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import com.fiscariello.progetto.ProjectInfo;
-import com.fiscariello.progetto.Release;
+import com.fiscariello.project.ProjectInfo;
+import com.fiscariello.project.Release;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.GitAPIException;

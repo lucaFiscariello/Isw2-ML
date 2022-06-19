@@ -4,8 +4,8 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fiscariello.progetto.ProjectInfo;
-import com.fiscariello.progetto.Release;
+import com.fiscariello.project.ProjectInfo;
+import com.fiscariello.project.Release;
 import org.json.JSONException;
 
 public class Proportion {

@@ -12,8 +12,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
-import com.fiscariello.progetto.ProjectInfo;
-import com.fiscariello.progetto.Release;
+import com.fiscariello.project.ProjectInfo;
+import com.fiscariello.project.Release;
 import com.fiscariello.bug.Bug;
 import com.google.common.collect.Lists;
 
@@ -241,23 +241,30 @@ public class DatasetCreator {
             Iterable<RevCommit> commits = git.log().addPath(relativePath).add(release.getIdRelease()).call();
 
             RevCommit firstCommit= commits.iterator().next();
+            
+            if(firstCommit != null){
+                //in secondi
+                int age= firstCommit.getCommitTime();
 
-            //in secondi
-            int age= firstCommit.getCommitTime();
+                //in minuti
+                age=age/60;
 
-            //in minuti
-            age=age/60;
+                //in ore
+                age=age/60;
 
-            //in ore
-            age=age/60;
+                //in giorni
+                age=age/24;
 
-            //in giorni
-            age=age/24;
+                //in settimane
+                age=age/7;
 
-            //in settimane
-            age=age/7;
-
-            ageClass[i]=age;
+                ageClass[i]=age;
+            }
+            else{
+                ageClass[i]=0;
+            }
+            
+            
 
         }
 

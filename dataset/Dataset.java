@@ -24,16 +24,29 @@ public class Dataset extends Table {
         super(name);
     }
 
+    public int getNumberRow(){
+        return this.column(0).size();
+    }
+
+    public int getNumberBuggyClassByRelease(String release){
+        Table tableFilt = this.where( 
+            this.stringColumn(DatasetCreator.NameColumnDataset.Release.toString()).isEqualTo(release)
+            .and(this.stringColumn(DatasetCreator.NameColumnDataset.Buggy.toString()).isEqualTo("YES")));
+
+        return tableFilt.column(0).size();
+    }
+
     public void writeArff(String nameFile) throws IOException{
 
-        this.removeColumns(NameColumnDataset.Path_classe.toString(),NameColumnDataset.Release.toString());
+        Table table = this.copy();
+        table.removeColumns(NameColumnDataset.Path_classe.toString(),NameColumnDataset.Release.toString());
 
         String relation ="@relation "+nameFile+"\n\n";
         String attribute="@attribute ";
         String data= "@data\n";
 
         String toWrite;
-        List<String> columnNames =this.columnNames();
+        List<String> columnNames =table.columnNames();
 
         File file = new File(nameFile);
         FileWriter fw = new FileWriter(file);
@@ -42,7 +55,7 @@ public class Dataset extends Table {
 
         for (String name : columnNames) {
 
-            if(this.column(name).get(0) instanceof Integer || this.column(name).get(0) instanceof Double)
+            if(table.column(name).get(0) instanceof Integer || table.column(name).get(0) instanceof Double)
                 toWrite=attribute+name+" numeric \n";
             else
                 toWrite=attribute+name+"{NO,YES} \n";
@@ -52,7 +65,7 @@ public class Dataset extends Table {
 
         fw.write("\n"+ data);
 
-        for (Row row : this) {
+        for (Row row : table) {
             List<Object> value = new ArrayList<>();
 
             for (String name : columnNames)
