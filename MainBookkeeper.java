@@ -20,14 +20,13 @@ import weka.classifiers.lazy.IBk;
 import weka.classifiers.trees.RandomForest;
 
 
-public class Main {
+public class MainBookkeeper {
     public static void main(String[] args) throws Exception {
 
-        String repoPath= "C:\\Users\\lucaf\\OneDrive\\Documenti\\GitHub\\avro\\.git";
-        String projectName="AVRO";
-        String jiraTicket="AVRO-";
+        String repoPath= "C:\\Users\\lucaf\\OneDrive\\Documenti\\GitHub\\bookkeeper\\.git";
+        String projectName="BOOKKEEPER";
+        String jiraTicket="BOOKKEEPER-";
         double Endperc=0.5;
-        double startperc=0.05;
         long pTest;
         long pTrain;
 
@@ -51,7 +50,8 @@ public class Main {
         List<Bug> bugsTesting;
 
         int size= projectInfo.getReleasesByPerc(Endperc).size();
-        int numTrainRelease =(int) (size*startperc);
+        int numTrainRelease =1;
+
 
         //inizializzo training set
         for(Release release : projectInfo.getReleases(numTrainRelease-1))
@@ -104,7 +104,7 @@ public class Main {
 
             try{
                 double percTraintTotal = numTrainRelease/(double)size*100;
-                int snoringClass = getTotalClassyBuggyByRelease(releaseTraining.getName())-datasetTraining.getNumberBuggyClassByRelease(releaseTraining.getName());
+                int snoringClass = datasetTraining.getNumberBuggyClassByRelease(releaseTraining.getName())-getTotalClassyBuggyByRelease(releaseTraining.getName());
                 
                 for(Classifier classifier : allClassifier){
                     
