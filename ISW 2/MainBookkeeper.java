@@ -104,7 +104,7 @@ public class MainBookkeeper {
 
             try{
                 double percTraintTotal = numTrainRelease/(double)size*100;
-                int snoringClass = datasetTraining.getNumberBuggyClassByRelease(releaseTraining.getName())-getTotalClassyBuggyByRelease(releaseTraining.getName());
+                int snoringClass = Math.abs(datasetTraining.getNumberBuggyClassByRelease(releaseTraining.getName())-getTotalClassyBuggyByRelease(releaseTraining.getName()));
                 
                 for(Classifier classifier : allClassifier){
                     

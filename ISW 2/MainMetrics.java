@@ -16,7 +16,9 @@ import java.io.File;
 
 public class MainMetrics {
     public static void main(String[] args) throws Exception {
-        Table dataset = Table.read().csv("DatasetMetrics.csv");
+        Table dataset = Table.read().csv("DatasetMetricsAV.csv");
+        //Table dataset = Table.read().csv("DatasetMetrics.csv");
+
         OutputWeka output;
 
         String datasetFiltrCSV = "DatasetMetricsFiltr.cvs";
@@ -86,8 +88,8 @@ public class MainMetrics {
 			eval.numTruePositives(numAttr - 1),
 			eval.numFalseNegatives(numAttr - 1),
 			eval.numFalsePositives(numAttr - 1),
-			eval.recall(0),
-			eval.precision(0)
+			eval.recall(1),
+			eval.precision(1)
 		);
 
         return output;

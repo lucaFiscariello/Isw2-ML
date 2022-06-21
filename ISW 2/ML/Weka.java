@@ -49,8 +49,8 @@ public class Weka{
 			eval.numTruePositives(numAttr - 1),
 			eval.numFalseNegatives(numAttr - 1),
 			eval.numFalsePositives(numAttr - 1),
-			eval.recall(0),
-			eval.precision(0),
+			eval.recall(1),
+			eval.precision(1),
 			sampling
 		);
 		
@@ -131,6 +131,17 @@ public class Weka{
 			isValid = (kappa<1);
 		}
 
+		public OutputWeka (double auc, double kappa, double tn, double tp, double fn, double fp, double recall, double precision){
+			this.auc=auc;
+			this.kappa=kappa;
+			this.trueNegative=tn;
+			this.truePositive=tp;
+			this.falseNegative=fn;
+			this.falsePositive=fp;
+			this.recall=recall;
+			this.precision=precision;
+		}
+
 		public double getAuc(){
 			return this.auc;
 		}
@@ -173,6 +184,12 @@ public class Weka{
 
 		public boolean isValid(){
 			return this.isValid;
+		}
+
+		public String toString(){
+			String s ;
+			s= "auc "+ auc + "\nkappa " + kappa + "\nrecall "+ recall+ "\nprecision "+precision+"\n------";
+			return s;
 		}
 
 
