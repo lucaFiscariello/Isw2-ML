@@ -15,11 +15,7 @@ import java.util.Queue;
 import com.ibm.icu.text.SimpleDateFormat;
 
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.api.errors.InvalidRefNameException;
-import org.eclipse.jgit.api.errors.RefAlreadyExistsException;
-import org.eclipse.jgit.api.errors.RefNotFoundException;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
@@ -34,7 +30,7 @@ public class ProjectInfo {
     private ArrayList<Release> release;
     private Git git;
 
-    public ProjectInfo(String namePoject, String pathRepository,String jiraTicket) throws IOException, GitAPIException, ParseException{
+    public ProjectInfo(String namePoject, String pathRepository,String jiraTicket) throws IOException, GitAPIException{
         this.nameProject=namePoject;
         this.pathRepository=pathRepository;
         this.jiraTicket=jiraTicket;
@@ -164,7 +160,7 @@ public class ProjectInfo {
 
     }
 
-    public Release getReleaseByDate(Date data) throws ParseException {
+    public Release getReleaseByDate(Date data) {
         for (Release r : release) {
             if(r.isBetween(data))
                 return r;
@@ -174,7 +170,7 @@ public class ProjectInfo {
 
     }
 
-    public ArrayList<File> getClassesByReleaseTag(String tag) throws RefAlreadyExistsException, RefNotFoundException, InvalidRefNameException, CheckoutConflictException, GitAPIException{
+    public List<File> getClassesByReleaseTag(String tag) throws  GitAPIException {
 
         //Cambio release
         this.git.checkout().setName(tag).call();
@@ -193,11 +189,11 @@ public class ProjectInfo {
             String pathFile = file.getPath();
             Boolean isDirectory = file.isDirectory();
 
-            if(!isDirectory & nameFile.endsWith(".java") &  !pathFile.contains("test") ){
+            if(!Boolean.TRUE.equals(isDirectory) && nameFile.endsWith(".java") &&  !pathFile.contains("test") ){
                 javaClasses.add(file);
             }
 
-            if(isDirectory){
+            if(Boolean.TRUE.equals(isDirectory)){
                 Collection<File> newFile =  Arrays.asList(file.listFiles());
                 allFile.addAll(newFile);
             }

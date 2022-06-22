@@ -1,6 +1,7 @@
 package com.fiscariello.dataset;
 
-import com.fiscariello.ML.Weka;
+import com.fiscariello.ml.Weka;
+
 import tech.tablesaw.api.DoubleColumn;
 import tech.tablesaw.api.IntColumn;
 import tech.tablesaw.api.StringColumn;
@@ -9,7 +10,7 @@ import weka.classifiers.Classifier;
 
 
 public class DatasetFinalCreator {
-    private Table table;
+    
     private Double[] auc;
     private Double[] kappa;
     private Double[] tn;
@@ -31,7 +32,7 @@ public class DatasetFinalCreator {
     private int currentRows;
 
     public enum NameColumnDataset {
-        Auc, Kappa, Tue_Negative, True_Positive, False_Negative, False_positive, Recall, Precision, Dataset, Classifier , Num_Training_Release, Perc_Train_Total, Sampling, Snoring_Class;
+        AUC, KAPPA, TRUE_NEGATIVE, TRUE_POSITIVE, FALSE_NEGATIVE, FALSE_POSITIVE, RECALL, PRECISION, DATASET, CLASSIFIER , NUM_TRAINING_RELEASE, PERC_TRAIN_TOTAL, SAMPLING, SNORING_CLASS;
     }
 
     public DatasetFinalCreator(int size){
@@ -79,23 +80,23 @@ public class DatasetFinalCreator {
     }
 
     public Table getTable(){
+        Table table;
+        StringColumn classifierColumn = StringColumn.create(NameColumnDataset.CLASSIFIER.toString(),this.classifier);
+        StringColumn datasetnameColumn =  StringColumn.create(NameColumnDataset.DATASET.toString(),this.datasetname);
+        StringColumn samplingColumn =  StringColumn.create(NameColumnDataset.SAMPLING.toString(),this.sampling);
 
-        StringColumn classifierColumn = StringColumn.create(NameColumnDataset.Classifier.toString(),this.classifier);
-        StringColumn datasetnameColumn =  StringColumn.create(NameColumnDataset.Dataset.toString(),this.datasetname);
-        StringColumn samplingColumn =  StringColumn.create(NameColumnDataset.Sampling.toString(),this.sampling);
+        DoubleColumn aucColumn = DoubleColumn.create(NameColumnDataset.AUC.toString(), auc);
+        DoubleColumn kappaColumn = DoubleColumn.create(NameColumnDataset.KAPPA.toString(), kappa);
+        DoubleColumn tnColumn = DoubleColumn.create(NameColumnDataset.TRUE_NEGATIVE.toString(), tn);
+        DoubleColumn tpColumn = DoubleColumn.create(NameColumnDataset.TRUE_POSITIVE.toString(), tp);
+        DoubleColumn fnColumn = DoubleColumn.create(NameColumnDataset.FALSE_NEGATIVE.toString(), fn);
+        DoubleColumn fpColumn = DoubleColumn.create(NameColumnDataset.FALSE_POSITIVE.toString(), fp);
+        DoubleColumn precisionColumn = DoubleColumn.create(NameColumnDataset.PRECISION.toString(), precision);
+        DoubleColumn recallColumn = DoubleColumn.create(NameColumnDataset.RECALL.toString(), recall);
+        DoubleColumn percTrainColumn = DoubleColumn.create(NameColumnDataset.PERC_TRAIN_TOTAL.toString(), percTrainTotal);
 
-        DoubleColumn aucColumn = DoubleColumn.create(NameColumnDataset.Auc.toString(), auc);
-        DoubleColumn kappaColumn = DoubleColumn.create(NameColumnDataset.Kappa.toString(), kappa);
-        DoubleColumn tnColumn = DoubleColumn.create(NameColumnDataset.Tue_Negative.toString(), tn);
-        DoubleColumn tpColumn = DoubleColumn.create(NameColumnDataset.True_Positive.toString(), tp);
-        DoubleColumn fnColumn = DoubleColumn.create(NameColumnDataset.False_Negative.toString(), fn);
-        DoubleColumn fpColumn = DoubleColumn.create(NameColumnDataset.False_positive.toString(), fp);
-        DoubleColumn precisionColumn = DoubleColumn.create(NameColumnDataset.Precision.toString(), precision);
-        DoubleColumn recallColumn = DoubleColumn.create(NameColumnDataset.Recall.toString(), recall);
-        DoubleColumn percTrainColumn = DoubleColumn.create(NameColumnDataset.Perc_Train_Total.toString(), percTrainTotal);
-
-        IntColumn numTrainColumn = IntColumn.create(NameColumnDataset.Num_Training_Release.toString(), numTrainRelease);
-        IntColumn numScnoringClassColumn = IntColumn.create(NameColumnDataset.Snoring_Class.toString(), snoringClass);
+        IntColumn numTrainColumn = IntColumn.create(NameColumnDataset.NUM_TRAINING_RELEASE.toString(), numTrainRelease);
+        IntColumn numScnoringClassColumn = IntColumn.create(NameColumnDataset.SNORING_CLASS.toString(), snoringClass);
 
 
         table = new Dataset("Dataset");

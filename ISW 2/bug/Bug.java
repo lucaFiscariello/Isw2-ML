@@ -3,6 +3,7 @@ package com.fiscariello.bug;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import com.ibm.icu.text.SimpleDateFormat;
 
@@ -17,11 +18,20 @@ public class Bug {
     private JSONArray fixedRelease;
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-mm-dd");
 
+    private String releaseDate= "releaseDate";
+    private String keystr = "key";
+    private String fields = "fields";
+    private String versions = "versions";
+    private String fixVersions = "fixVersions";
+    private String created = "created";
+
+    
     public Bug(JSONObject singleIussue) throws JSONException{
-        this.key= singleIussue.getString("key");
-        this.affectedRelease = singleIussue.getJSONObject("fields").getJSONArray("versions");
-        this.fixedRelease= singleIussue.getJSONObject("fields").getJSONArray("fixVersions");
-        this.dataCreationTicket= singleIussue.getJSONObject("fields").getString("created").substring(0,10);
+
+        this.key= singleIussue.getString(keystr);
+        this.affectedRelease = singleIussue.getJSONObject(fields).getJSONArray(versions);
+        this.fixedRelease= singleIussue.getJSONObject(fields).getJSONArray(fixVersions);
+        this.dataCreationTicket= singleIussue.getJSONObject(fields).getString(created).substring(0,10);
     }
 
     public String getKey(){
@@ -40,13 +50,14 @@ public class Bug {
         return this.fixedRelease;
     }
 
-    public ArrayList<String> getFixedReleaseDate() throws JSONException{
+    public List<String> getFixedReleaseDate() throws JSONException{
 
+        
         ArrayList<String> releaseDateFix= new ArrayList<>();
         for( int i=0 ;i<fixedRelease.length(); i++){
 
-            if(fixedRelease.getJSONObject(i).has("releaseDate")){
-                releaseDateFix.add(fixedRelease.getJSONObject(i).getString("releaseDate"));
+            if(fixedRelease.getJSONObject(i).has(releaseDate)){
+                releaseDateFix.add(fixedRelease.getJSONObject(i).getString(releaseDate));
             }
 
         }
@@ -54,17 +65,15 @@ public class Bug {
     }
 
     public Date getDateIV() throws JSONException, ParseException{
-        if(affectedRelease.length()>0){
-            if(affectedRelease.getJSONObject(0).has("releaseDate"))
-                return sdf.parse(affectedRelease.getJSONObject(0).getString("releaseDate"));
+        if(affectedRelease.length()>0 && affectedRelease.getJSONObject(0).has(releaseDate)){
+             return sdf.parse(affectedRelease.getJSONObject(0).getString(releaseDate));
         }
         return null;
     }
 
     public Date getDateFV() throws JSONException, ParseException{
-        if(fixedRelease.length()>0){
-            if(fixedRelease.getJSONObject(0).has("releaseDate"))
-                return sdf.parse(fixedRelease.getJSONObject(0).getString("releaseDate"));
+        if(fixedRelease.length()>0 && fixedRelease.getJSONObject(0).has(releaseDate)){
+            return sdf.parse(fixedRelease.getJSONObject(0).getString(releaseDate));
         }
         return null;
     }
@@ -76,13 +85,13 @@ public class Bug {
 
     public boolean isValid() throws ParseException, JSONException{
 
-        if(getDateOV()!= null & getDateIV()!= null & getDateFV()!= null ){
+        if(getDateOV()!= null && getDateIV()!= null && getDateFV()!= null ){
 
             Date ov= getDateOV();
             Date iv= getDateIV();
             Date fv= getDateFV();
 
-            return fv.after(ov) & (ov.after(iv) || ov.equals(iv)) ;
+            return fv.after(ov) && (ov.after(iv) || ov.equals(iv)) ;
         }
 
         return false;

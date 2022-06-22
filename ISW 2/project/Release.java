@@ -1,6 +1,4 @@
 package com.fiscariello.project;
-
-import java.text.ParseException;
 import java.util.Date;
 
 import org.eclipse.jgit.lib.ObjectId;
@@ -13,7 +11,7 @@ public class Release{
     private Iterable<RevCommit> commits;
     private ObjectId idRelease;
 
-    public Release(Date finalData,Iterable<RevCommit> commits,String name,ObjectId idRelease) throws ParseException{
+    public Release(Date finalData,Iterable<RevCommit> commits,String name,ObjectId idRelease) {
         this.finalData=finalData;
         this.commits=commits;
         this.name=name;
@@ -21,8 +19,8 @@ public class Release{
     }
 
 
-    public boolean isBetween(Date data) throws ParseException{
-        return data.after(initialData) & data.before(finalData);
+    public boolean isBetween(Date data) {
+        return data.after(initialData) && data.before(finalData);
     }
 
     public Iterable<RevCommit> getCommits(){
@@ -55,6 +53,12 @@ public class Release{
 
 
     public boolean equals(Object release){
+        if (release == null)
+            return false;
+
+        if (this.getClass() != release.getClass())
+            return false;
+
         Release r =(Release) release;
         return r.getFinalDate().equals(this.finalData);
     }

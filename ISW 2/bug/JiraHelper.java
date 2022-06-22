@@ -15,13 +15,9 @@ import java.util.stream.StreamSupport;
 import com.fiscariello.project.ProjectInfo;
 import com.fiscariello.project.Release;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.api.errors.InvalidRefNameException;
-import org.eclipse.jgit.api.errors.RefAlreadyExistsException;
-import org.eclipse.jgit.api.errors.RefNotFoundException;
 import org.eclipse.jgit.diff.DiffEntry;
-import org.eclipse.jgit.errors.IncorrectObjectTypeException;
+import org.eclipse.jgit.errors.RevisionSyntaxException;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectReader;
 
@@ -35,35 +31,35 @@ import org.json.JSONObject;
 import java.io.InputStream;
 
 import java.net.URL;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 
 
 public class JiraHelper {
 
-    private ArrayList<Bug> allBug;
+    private List<Bug> allBug;
 
     public JiraHelper(String projectName) throws IOException, JSONException{
         allBug=this.retrieve(projectName);
     }
 
-    public ArrayList<Bug> getAllBug(){
+    public List<Bug> getAllBug(){
         return this.allBug;
     }
 
     public List<Bug> getAllBugPreviusRelease(Release release){
         return this.allBug.stream().filter(b -> {
-            try {
-                return b.getDateOV().before(release.getFinalDate());
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
+                try {
+                    return b.getDateOV().before(release.getFinalDate());
+                } catch (ParseException e) {
+                    //Eccezione di conversione della data
+                }
             return false;
         }).collect(Collectors.toList());
     }
 
 
-    public List<String> searchBuggyClass(ProjectInfo projectinfo, Date fixedRelease, String keyJira) throws RefAlreadyExistsException, RefNotFoundException, InvalidRefNameException, CheckoutConflictException, GitAPIException, IncorrectObjectTypeException, IOException, JSONException, ParseException{
+    public List<String> searchBuggyClass(ProjectInfo projectinfo, Date fixedRelease, String keyJira) throws  GitAPIException, RevisionSyntaxException, IOException {
 
         Git git= projectinfo.getGit();
         List<String> buggyClass= new ArrayList<>();
@@ -101,7 +97,7 @@ public class JiraHelper {
                     String diftype=diff.getChangeType().toString();
                     String pathFile= diff.getNewPath();
 
-                    if(diftype.equals("MODIFY") & pathFile.endsWith(".java") & !pathFile.contains("test")){
+                    if(diftype.equals("MODIFY") && pathFile.endsWith(".java") && !pathFile.contains("test")){
                         String pathFileJava = projectinfo.getRelativePathFile(pathFile);
                         buggyClass.add(pathFileJava);
                     }
@@ -119,10 +115,12 @@ public class JiraHelper {
 
     private ArrayList<Bug> retrieve(String projName) throws IOException, JSONException {
 
-        Integer j = 0, i = 0, total = 1;
+        int j = 0;
+        int i = 0;
+        int total = 1;
 
         JSONArray totalIssues=new JSONArray();
-        ArrayList<Bug> allBug = new ArrayList<>();
+        ArrayList<Bug> allBugs = new ArrayList<>();
 
         //Get JSON API for closed bugs w/ AV in the project
         do {
@@ -131,7 +129,7 @@ public class JiraHelper {
             String url = "https://issues.apache.org/jira/rest/api/2/search?jql=project=%22"
               + projName + "%22AND%22issueType%22=%22Bug%22AND(%22status%22=%22closed%22OR"
               + "%22status%22=%22resolved%22)AND%22resolution%22=%22fixed%22&fields=key,fixVersions,resolutiondate,versions,created&startAt="
-              + i.toString() + "&maxResults=" + j.toString();
+              + i + "&maxResults=" + j;
 
             JSONObject json = readJsonFromUrl(url);
             JSONArray issues = json.getJSONArray("issues");
@@ -148,9 +146,9 @@ public class JiraHelper {
 
         for (int k = 0; k < totalIssues.length(); k++) {
             Bug bug = new Bug(totalIssues.getJSONObject(k));
-            allBug.add(bug);
+            allBugs.add(bug);
         }
-        return allBug;
+        return allBugs;
     }
 
     private static String readAll(Reader rd) throws IOException {
@@ -164,14 +162,12 @@ public class JiraHelper {
 
     private static JSONObject readJsonFromUrl(String url) throws IOException, JSONException {
         InputStream is = new URL(url).openStream();
-        try {
-            BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
-            String jsonText = readAll(rd);
-            JSONObject json = new JSONObject(jsonText);
-            return json;
-        } finally {
-            is.close();
-        }
+        
+        BufferedReader rd = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
+        String jsonText = readAll(rd);
+        return new JSONObject(jsonText);
+        
+        
     }
 
 

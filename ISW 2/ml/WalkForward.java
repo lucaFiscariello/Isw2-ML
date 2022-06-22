@@ -1,9 +1,14 @@
-package com.fiscariello;
+package com.fiscariello.ml;
 
+import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fiscariello.ML.Weka;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.errors.RevisionSyntaxException;
+import org.json.JSONException;
+
 import com.fiscariello.bug.Bug;
 import com.fiscariello.bug.JiraHelper;
 import com.fiscariello.bug.Proportion;
@@ -19,14 +24,23 @@ import weka.classifiers.bayes.NaiveBayes;
 import weka.classifiers.lazy.IBk;
 import weka.classifiers.trees.RandomForest;
 
+public class WalkForward {
 
-public class MainBookkeeper {
-    public static void main(String[] args) throws Exception {
+    private String repoPath;
+    private String projectName;
+    private double endperc;
+    private double startperc;
+    private String jiraTicket;
 
-        String repoPath= "C:\\Users\\lucaf\\OneDrive\\Documenti\\GitHub\\bookkeeper\\.git";
-        String projectName="BOOKKEEPER";
-        String jiraTicket="BOOKKEEPER-";
-        double Endperc=0.5;
+    public WalkForward(String repoPath,String projectName,String jiraTicket, double endperc,double startperc){
+        this.repoPath = repoPath;
+        this.projectName= projectName;
+        this.jiraTicket= jiraTicket;
+        this.endperc= endperc;
+        this.startperc=startperc;
+    }
+
+    public void execute() throws IOException, JSONException, ParseException, RevisionSyntaxException, GitAPIException{
         long pTest;
         long pTrain;
 
@@ -49,9 +63,8 @@ public class MainBookkeeper {
         List<Bug> bugsTraining;
         List<Bug> bugsTesting;
 
-        int size= projectInfo.getReleasesByPerc(Endperc).size();
-        int numTrainRelease =1;
-
+        int size= projectInfo.getReleasesByPerc(endperc).size();
+        int numTrainRelease =(int) (size*startperc);
 
         //inizializzo training set
         for(Release release : projectInfo.getReleases(numTrainRelease-1))
@@ -69,10 +82,10 @@ public class MainBookkeeper {
             datasetCreatorTesting.addReleaseDataset(projectInfo, releaseTesting2.getName());
 
             proportion.setAllBug(jiraHelper.getAllBugPreviusRelease(releaseTesting2));
-            pTest= proportion.getP_Training(releaseTesting2.getName());
+            pTest= proportion.getPTraining(releaseTesting2.getName());
 
             proportion.setAllBug(jiraHelper.getAllBugPreviusRelease(releaseTraining));
-            pTrain= proportion.getP_Training(releaseTraining.getName());
+            pTrain= proportion.getPTraining(releaseTraining.getName());
 
             bugsTraining=jiraHelper.getAllBugPreviusRelease(releaseTraining);
             bugsTesting=jiraHelper.getAllBugPreviusRelease(releaseTesting2);
@@ -104,7 +117,7 @@ public class MainBookkeeper {
 
             try{
                 double percTraintTotal = numTrainRelease/(double)size*100;
-                int snoringClass = Math.abs(datasetTraining.getNumberBuggyClassByRelease(releaseTraining.getName())-getTotalClassyBuggyByRelease(releaseTraining.getName()));
+                int snoringClass = getTotalClassyBuggyByRelease(releaseTraining.getName(),projectName)-datasetTraining.getNumberBuggyClassByRelease(releaseTraining.getName());
                 
                 for(Classifier classifier : allClassifier){
                     
@@ -122,28 +135,25 @@ public class MainBookkeeper {
                 }
             }
             catch(Exception e){
-                System.err.println("Non ci sono dati sufficienti per valutare il modello");
+                //Eccezione sollevata quando non ci sono sufficienti dati per calcolare le metriche
             }
            
             
         }
 
-        finaldatasetCreator.getTable().write().csv("FinalDatasetPresentation.csv");
-        datasetCreatorTraining.geTable().write().csv("DatasetMetrics.csv");
+        finaldatasetCreator.getTable().write().csv("FinalDatasetPresentation"+projectName+".csv");
+        datasetCreatorTraining.geTable().write().csv("DatasetMetrics"+projectName+".csv");
 
     }
-
-
-    private static int getTotalClassyBuggyByRelease(String release){
-        Table datset = Table.read().csv("DatasetMetrics.csv");
+    
+    private static int getTotalClassyBuggyByRelease(String release,String projectName){
+        Table datset = Table.read().csv("DatasetMetrics"+projectName+".csv");
 
         Table tableFilt = datset.where( 
-            datset.stringColumn(DatasetCreator.NameColumnDataset.Release.toString()).isEqualTo(release)
-            .and(datset.stringColumn(DatasetCreator.NameColumnDataset.Buggy.toString()).isEqualTo("YES")));
+            datset.stringColumn(DatasetCreator.NameColumnDataset.RELEASE.toString()).isEqualTo(release)
+            .and(datset.stringColumn(DatasetCreator.NameColumnDataset.BUGGY.toString()).isEqualTo("YES")));
 
         return tableFilt.column(0).size();
     }
-
-
-
+    
 }

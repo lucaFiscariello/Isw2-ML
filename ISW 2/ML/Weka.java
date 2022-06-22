@@ -1,4 +1,4 @@
-package com.fiscariello.ML;
+package com.fiscariello.ml;
 
 /*
  *  How to use WEKA API in Java 
@@ -42,19 +42,19 @@ public class Weka{
 		Evaluation eval = new Evaluation(testing);	
 		eval.evaluateModel(classifier, testing); 
 				
-		OutputWeka output = new Weka.OutputWeka(
+		Weka.OutputWeka output = new Weka.OutputWeka(
 			eval.areaUnderROC(1),
 			eval.kappa(),
 			eval.numTrueNegatives(numAttr - 1),
 			eval.numTruePositives(numAttr - 1),
 			eval.numFalseNegatives(numAttr - 1),
 			eval.numFalsePositives(numAttr - 1),
-			eval.recall(1),
-			eval.precision(1),
-			sampling
+			eval.recall(1)
 		);
-		
 
+		output.setPrecision(eval.precision(1));
+		output.setSampling(sampling);
+			
 		return output;
 				
 	}
@@ -117,7 +117,7 @@ public class Weka{
 
 		private boolean isValid;
 
-		public OutputWeka (double auc, double kappa, double tn, double tp, double fn, double fp, double recall, double precision , String sampling){
+		public OutputWeka (double auc, double kappa, double tn, double tp, double fn, double fp, double recall){
 			this.auc=auc;
 			this.kappa=kappa;
 			this.trueNegative=tn;
@@ -125,21 +125,12 @@ public class Weka{
 			this.falseNegative=fn;
 			this.falsePositive=fp;
 			this.recall=recall;
-			this.precision=precision;
-			this.sampling=sampling;
 
-			isValid = (kappa<1);
 		}
 
-		public OutputWeka (double auc, double kappa, double tn, double tp, double fn, double fp, double recall, double precision){
-			this.auc=auc;
-			this.kappa=kappa;
-			this.trueNegative=tn;
-			this.truePositive=tp;
-			this.falseNegative=fn;
-			this.falsePositive=fp;
-			this.recall=recall;
-			this.precision=precision;
+
+		public void setPrecision(double precision){
+			this.precision= precision;
 		}
 
 		public double getAuc(){
@@ -178,8 +169,8 @@ public class Weka{
 			return this.sampling;
 		}
 
-		public String setSampling(String sampling){
-			return this.sampling= sampling;
+		public void setSampling(String sampling){
+			 this.sampling= sampling;
 		}
 
 		public boolean isValid(){

@@ -30,8 +30,8 @@ public class Dataset extends Table {
 
     public int getNumberBuggyClassByRelease(String release){
         Table tableFilt = this.where( 
-            this.stringColumn(DatasetCreator.NameColumnDataset.Release.toString()).isEqualTo(release)
-            .and(this.stringColumn(DatasetCreator.NameColumnDataset.Buggy.toString()).isEqualTo("YES")));
+            this.stringColumn(DatasetCreator.NameColumnDataset.RELEASE.toString()).isEqualTo(release)
+            .and(this.stringColumn(DatasetCreator.NameColumnDataset.BUGGY.toString()).isEqualTo("YES")));
 
         return tableFilt.column(0).size();
     }
@@ -39,7 +39,7 @@ public class Dataset extends Table {
     public void writeArff(String nameFile) throws IOException{
 
         Table table = this.copy();
-        table.removeColumns(NameColumnDataset.Path_classe.toString(),NameColumnDataset.Release.toString());
+        table.removeColumns(NameColumnDataset.PATH_CLASS.toString(),NameColumnDataset.RELEASE.toString());
 
         String relation ="@relation "+nameFile+"\n\n";
         String attribute="@attribute ";
@@ -47,43 +47,46 @@ public class Dataset extends Table {
 
         String toWrite;
         List<String> columnNames =table.columnNames();
-
+        
         File file = new File(nameFile);
-        FileWriter fw = new FileWriter(file);
+        
+        try ( FileWriter fw = new FileWriter(file);) {
+            fw.append(relation);
 
-        fw.append(relation);
+            for (String name : columnNames) {
 
-        for (String name : columnNames) {
+                if(table.column(name).get(0) instanceof Integer || table.column(name).get(0) instanceof Double)
+                    toWrite=attribute+name+" numeric \n";
+                else
+                    toWrite=attribute+name+"{NO,YES} \n";
 
-            if(table.column(name).get(0) instanceof Integer || table.column(name).get(0) instanceof Double)
-                toWrite=attribute+name+" numeric \n";
-            else
-                toWrite=attribute+name+"{NO,YES} \n";
+                fw.append(toWrite);
+            }
 
-            fw.append(toWrite);
+            fw.write("\n"+ data);
+
+            for (Row row : table) {
+                List<Object> value = new ArrayList<>();
+
+                for (String name : columnNames)
+                    value.add(row.getObject(name));
+
+                toWrite= value.toString().replace("[", "").replace("]", "").replace("null", "?").replace(" ", "");
+
+                fw.write(toWrite+"\n");
+            }
+
+            fw.flush();
+            
         }
+       
 
-        fw.write("\n"+ data);
-
-        for (Row row : table) {
-            List<Object> value = new ArrayList<>();
-
-            for (String name : columnNames)
-                value.add(row.getObject(name));
-
-            toWrite= value.toString().replace("[", "").replace("]", "").replace("null", "?").replace(" ", "");
-
-            fw.write(toWrite+"\n");
-        }
-
-
-        fw.flush();
-        fw.close();
+        
     }
 
     public void writeArffComplex(String nameFile) throws IOException{
 
-        this.removeColumns(NameColumnDataset.Path_classe.toString(),NameColumnDataset.Release.toString());
+        this.removeColumns(NameColumnDataset.PATH_CLASS.toString(),NameColumnDataset.RELEASE.toString());
 
         String relation ="@relation "+nameFile+"\n\n";
         String attribute="@attribute ";
@@ -94,40 +97,43 @@ public class Dataset extends Table {
         List<String> columnNames =this.columnNames();
 
         File file = new File(nameFile);
-        FileWriter fw = new FileWriter(file);
+        try ( FileWriter fw = new FileWriter(file);) {
+            fw.append(relation);
 
-        fw.append(relation);
-
-        for (String name : columnNames) {
-
-            HashSet<Object> uniqueValues = new HashSet<>();
-
-            for (Object object : this.column(name)) {
-                uniqueValues.add(object);
+            for (String name : columnNames) {
+    
+                HashSet<Object> uniqueValues = new HashSet<>();
+    
+                for (Object object : this.column(name)) {
+                    uniqueValues.add(object);
+                }
+    
+                uniqueValuesString= uniqueValues.toString();
+                uniqueValuesString= uniqueValuesString.replace("[", "{").replace("]", "}").replace(" ", "");
+                toWrite=attribute+name+" "+uniqueValuesString+"\n";
+                fw.append(toWrite);
             }
-
-            uniqueValuesString= uniqueValues.toString();
-            uniqueValuesString= uniqueValuesString.replace("[", "{").replace("]", "}").replace(" ", "");
-            toWrite=attribute+name+" "+uniqueValuesString+"\n";
-            fw.append(toWrite);
+    
+            fw.write("\n"+ data);
+    
+            for (Row row : this) {
+                List<Object> value = new ArrayList<>();
+    
+                for (String name : columnNames)
+                    value.add(row.getObject(name));
+    
+                toWrite= value.toString().replace("[", "").replace("]", "").replace("null", "?").replace(" ", "");
+    
+                fw.write(toWrite+"\n");
+            }
+    
+    
+            fw.flush();
+            
         }
 
-        fw.write("\n"+ data);
-
-        for (Row row : this) {
-            List<Object> value = new ArrayList<>();
-
-            for (String name : columnNames)
-                value.add(row.getObject(name));
-
-            toWrite= value.toString().replace("[", "").replace("]", "").replace("null", "?").replace(" ", "");
-
-            fw.write(toWrite+"\n");
         }
 
 
-        fw.flush();
-        fw.close();
-    }
 
 }

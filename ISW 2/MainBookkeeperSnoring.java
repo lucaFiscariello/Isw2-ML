@@ -1,8 +1,12 @@
 package com.fiscariello;
 
 import java.io.File;
-
+import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.List;
+
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 
 import com.fiscariello.dataset.DatasetCreator;
 import com.fiscariello.project.ProjectInfo;
@@ -19,23 +23,24 @@ import weka.core.converters.CSVLoader;
 public class MainBookkeeperSnoring {
     public static void main(String[] args) throws Exception {
 
-        String repoPath= "C:\\Users\\lucaf\\OneDrive\\Documenti\\GitHub\\bookkeeper\\.git";
         String projectName="BOOKKEEPER";
         String jiraTicket="BOOKKEEPER-";
-        
+        JSONParser parser = new JSONParser();
+        Object obj = parser.parse(new FileReader("Configuration.json"));
+        JSONObject jsonObject =  (JSONObject) obj;
+        String repoPath = (String) jsonObject.get(projectName);
         
         ProjectInfo projectInfo = new ProjectInfo(projectName, repoPath, jiraTicket);
         
-        splitDataset(projectInfo);
+        splitDataset(projectInfo);        
         evalModel(projectInfo);
-        
 
     }
 
-    private static void evalModel(ProjectInfo projectInfo) throws Exception {
+    private static List<Double> evalModel(ProjectInfo projectInfo) throws Exception {
 
-        double Endperc=0.5;
-        int size= projectInfo.getReleasesByPerc(Endperc).size();
+        double endperc=0.5;
+        int size= projectInfo.getReleasesByPerc(endperc).size();
         int numTrainRelease =1;
         ArrayList<Double> precision = new ArrayList<>();
         
@@ -64,26 +69,25 @@ public class MainBookkeeperSnoring {
 
             try{
                 eval.evaluateModel(classifier, datatest); 
-                System.out.println(eval.precision(1));
                 precision.add(eval.precision(1));
             }
             catch(Exception e){
-                e.printStackTrace();
+                //Eccezione sollevata se non ho sufficienti dati per elaborare modello
             }
             
         }
 
-        System.out.println(precision);
-
+        return precision;
     }
 
     private static void splitDataset(ProjectInfo projectInfo) {
-        Table dataset = Table.read().csv("DatasetMetrics.csv");
+        Table dataset = Table.read().csv("DatasetMetrics"+projectInfo.getNameProject()+".csv");
         Table incrementalDataset = Table.create();
-        double Endperc=0.5;
+        double endperc=0.5;
 
-        int size= projectInfo.getReleasesByPerc(Endperc).size();
+        int size= projectInfo.getReleasesByPerc(endperc).size();
         int numTrainRelease =1;
+        Table test;
         
         for(;numTrainRelease<size-2; numTrainRelease++){
 
@@ -92,7 +96,6 @@ public class MainBookkeeperSnoring {
             Release releaseTesting2 = projectInfo.getReleaseByNumber(numTrainRelease+2);
 
             Table partial = filterTable(dataset,releaseTraining.getName());
-            Table test = Table.create();
             
             if(incrementalDataset.isEmpty())
                 incrementalDataset=partial;
@@ -110,9 +113,8 @@ public class MainBookkeeperSnoring {
     }
 
     public static Table filterTable(Table table , String release){
-        Table datasetFiltr = table.where(
-            table.stringColumn(DatasetCreator.NameColumnDataset.Release.toString()).isEqualTo(release));
-        return datasetFiltr;
+        return table.where(table.stringColumn(DatasetCreator.NameColumnDataset.RELEASE.toString()).isEqualTo(release));
+         
     }
 
   
